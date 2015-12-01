@@ -1,0 +1,3 @@
+cottage_centre_property_homepage:
+    path:     /hello/{name}
+    defaults: { _controller: CottageCentrePropertyBundle:Default:index }

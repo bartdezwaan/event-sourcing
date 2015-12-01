@@ -1,0 +1,15 @@
+services:
+    async.event_handling.event_bus:
+        class: BartdeZwaan\EventSourcing\Async\EventHandling\AsyncEventBus
+        arguments: [@async.message_handler]
+
+    async.message_handler:
+        class: BartdeZwaan\EventSourcing\Async\EventHandling\RabbitMQMessageHandler
+        arguments: [%exchange_name%, %queue_name%, @amqp_stream_connection , @async.serializer]
+
+    async.serializer:
+        class: BartdeZwaan\EventSourcing\Async\Serializer\PhpSerializer
+
+    amqp_stream_connection:
+        class: PhpAmqpLib\Connection\AMQPStreamConnection
+        arguments: ['localhost', 5672, 'guest', 'guest']

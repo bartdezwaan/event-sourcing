@@ -3,23 +3,27 @@
 namespace BartdeZwaan\EventSourcing\Async\Serializer;
 
 use Broadway\Domain\DomainMessage;
+use Broadway\Serializer\SerializerInterface;
 
-class PhpSerializer implements Serializer
+class PhpSerializer implements SerializerInterface
 {
     /**
      * {@inheritDoc}
      */
-    public function serialize(DomainMessage $domainMessage)
+    public function serialize($object)
     {
-        return serialize($domainMessage);
+        return array(
+            'class' => get_class($object),
+            'payload' => serialize($object)
+        );
     }
 
     /**
      * {@inheritDoc}
      */
-    public function deserialize($data)
+    public function deserialize(array $serializedObject)
     {
-        return unserialize($data);
+        return unserialize($serializedObject['payload']);
     }
 }
 
