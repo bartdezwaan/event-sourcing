@@ -1,6 +1,6 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\Serializer;
+namespace Zwaan\EventSourcing\Serializer;
 
 class EventObjectMapper
 {

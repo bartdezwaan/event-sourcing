@@ -1,14 +1,14 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\EventHandling;
+namespace Zwaan\EventSourcing\EventHandling;
 
-use BartdeZwaan\EventSourcing\Async\MessageHandling\RabbitMQ\Adapter;
+use Zwaan\EventSourcing\MessageHandling\RabbitMQ\Adapter;
 use Broadway\Domain\DomainMessage;
 use Broadway\Serializer\SerializerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
-class RabbitMQMessageHandler implements MessageHandler
+class RabbitMQEventHandler implements EventHandler
 {
     public function __construct(Adapter $adapter, SerializerInterface $serializer)
     {

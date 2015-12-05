@@ -1,8 +1,8 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\EventHandling;
+namespace Zwaan\EventSourcing\MessageHandling;
 
-use BartdeZwaan\EventSourcing\Async\Serializer\Serializer;
+use Zwaan\EventSourcing\Serializer\Serializer;
 use Broadway\Domain\DomainMessage;
 use Broadway\Domain\DomainEventStream;
 use Broadway\EventHandling\EventBusInterface;

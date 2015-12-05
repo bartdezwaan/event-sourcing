@@ -1,6 +1,6 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\EventHandling;
+namespace Zwaan\EventSourcing\EventHandling;
 
 use Broadway\Domain\DomainEventStreamInterface;
 use Broadway\Domain\DomainMessage;
@@ -16,14 +16,14 @@ class AsyncEventBus implements EventBusInterface
     private $eventListeners = array();
     private $queue          = array();
     private $isPublishing   = false;
-    private $messageHandler;
+    private $eventHandler;
 
     /**
-     * @param MessageHandler $messageHandler
+     * @param EventHandler $eventHandler
      */
-    public function __construct(MessageHandler $messageHandler)
+    public function __construct(EventHandler $eventHandler)
     {
-        $this->messageHandler = $messageHandler;
+        $this->eventHandler = $eventHandler;
     }
 
     /**
@@ -31,7 +31,7 @@ class AsyncEventBus implements EventBusInterface
      */
     public function listen()
     {
-        $this->messageHandler->listen($this);
+        $this->eventHandler->listen($this);
     }
 
     /**
@@ -56,7 +56,7 @@ class AsyncEventBus implements EventBusInterface
 
             try {
                 while ($domainMessage = array_shift($this->queue)) {
-                    $this->messageHandler->publish($domainMessage);
+                    $this->eventHandler->publish($domainMessage);
                 }
 
                 $this->isPublishing = false;

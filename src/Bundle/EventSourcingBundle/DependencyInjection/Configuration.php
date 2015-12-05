@@ -1,6 +1,6 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\Bundle\EventSourcingAsyncBundle\DependencyInjection;
+namespace Zwaan\EventSourcing\Bundle\EventSourcingBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
@@ -18,7 +18,7 @@ class Configuration implements ConfigurationInterface
     public function getConfigTreeBuilder()
     {
         $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('bartde_zwaan_event_sourcing_async');
+        $rootNode = $treeBuilder->root('zwaan_event_sourcing');
 
         // Here you should define the parameters that are allowed to
         // configure your bundle. See the documentation linked above for

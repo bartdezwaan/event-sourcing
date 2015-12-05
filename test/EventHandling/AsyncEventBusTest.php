@@ -1,10 +1,10 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\EventHandling;
+namespace Zwaan\EventSourcing\EventHandling;
 
-use BartdeZwaan\EventSourcing\Async\MessageHandling\RabbitMQ\InMemoryAdapter;
-use BartdeZwaan\EventSourcing\Async\Serializer\PhpSerializer;
-use BartdeZwaan\EventSourcing\Async\TestCase;
+use Zwaan\EventSourcing\MessageHandling\RabbitMQ\InMemoryAdapter;
+use Zwaan\EventSourcing\Serializer\PhpSerializer;
+use Zwaan\EventSourcing\TestCase;
 use Broadway\Domain\DomainEventStream;
 use Broadway\Domain\DomainMessage;
 use Broadway\Domain\Metadata;
@@ -15,23 +15,23 @@ use PhpAmqpLib\Message\AMQPMessage;
 class AsyncEventBusTest extends TestCase
 {
     private $eventBus;
-    private $messageHandler;
+    private $eventHandler;
     private $serializer;
 
     public function setUp()
     {
         $this->serializer = new PhpSerializer();
-        $this->eventBus = new AsyncEventBus($this->getMessageHandler());
+        $this->eventBus = new AsyncEventBus($this->getEventHandler());
     }
 
-    private function getMessageHandler()
+    private function getEventHandler()
     {
-        if (! $this->messageHandler) {
+        if (! $this->eventHandler) {
             $adapter = new InMemoryAdapter();
-            $this->messageHandler = new RabbitMQMessageHandler($adapter, $this->serializer);
+            $this->eventHandler = new RabbitMQEventHandler($adapter, $this->serializer);
         }
 
-        return $this->messageHandler;
+        return $this->eventHandler;
     }
 
     /**
@@ -99,19 +99,19 @@ class AsyncEventBusTest extends TestCase
         $domainEventStream1 = new DomainEventStream(array($domainMessage1));
         $domainEventStream2 = new DomainEventStream(array($domainMessage2));
 
-        $messageHandler = $this->createMessageHandlerMock();
-        $messageHandler
+        $eventHandler = $this->createEventHandlerMock();
+        $eventHandler
             ->expects($this->at(0))
             ->method('publish')
             ->with($domainMessage1)
             ->will($this->throwException(new \Exception('I failed.')));
 
-        $messageHandler
+        $eventHandler
             ->expects($this->at(1))
             ->method('publish')
             ->with($domainMessage2);
 
-        $eventBus = new AsyncEventBus($messageHandler);
+        $eventBus = new AsyncEventBus($eventHandler);
 
         try {
             $eventBus->publish($domainEventStream1);
@@ -172,9 +172,9 @@ class AsyncEventBusTest extends TestCase
         return $this->getMockBuilder('Broadway\EventHandling\EventListenerInterface')->getMock();
     }
 
-    private function createMessageHandlerMock()
+    private function createEventHandlerMock()
     {
-        return $this->getMockBuilder('BartdeZwaan\EventSourcing\Async\EventHandling\MessageHandler')->getMock();
+        return $this->getMockBuilder('Zwaan\EventSourcing\EventHandling\EventHandler')->getMock();
     }
 
     private function createDomainMessage($payload)

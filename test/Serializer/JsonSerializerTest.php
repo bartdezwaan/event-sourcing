@@ -1,8 +1,8 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\Serializer;
+namespace Zwaan\EventSourcing\Serializer;
 
-use BartdeZwaan\EventSourcing\Async\TestCase;
+use Zwaan\EventSourcing\TestCase;
 use Broadway\Domain\DateTime;
 use Broadway\Domain\DomainMessage;
 use Broadway\Domain\Metadata;
@@ -65,12 +65,12 @@ class JMSSerializerTest extends TestCase
 
     public function getSerializedEvent()
     {
-        return '{"@type":"Broadway\\\\Domain\\\\DomainMessage","playhead":1,"metadata":{"@type":"Broadway\\\\Domain\\\\Metadata","values":[]},"payload":{"@type":"BartdeZwaan\\\\EventSourcing\\\\Async\\\\Serializer\\\\SimpleTestEvent","data":{"foo":"bar"}},"id":1,"recordedOn":{"@type":"Broadway\\\\Domain\\\\DateTime","dateTime":{"@type":"DateTime","date":"2015-11-29 18:24:55.072250","timezone_type":3,"timezone":"Europe\/Berlin"}}}';
+        return '{"@type":"Broadway\\\\Domain\\\\DomainMessage","playhead":1,"metadata":{"@type":"Broadway\\\\Domain\\\\Metadata","values":[]},"payload":{"@type":"Zwaan\\\\EventSourcing\\\\Serializer\\\\SimpleTestEvent","data":{"foo":"bar"}},"id":1,"recordedOn":{"@type":"Broadway\\\\Domain\\\\DateTime","dateTime":{"@type":"DateTime","date":"2015-11-29 18:24:55.072250","timezone_type":3,"timezone":"Europe\/Berlin"}}}';
     }
 
     public function getUnkownSerializedEvent()
     {
-        return '{"@type":"Unkown\\\\Domain\\\\DomainMessage","playhead":1,"metadata":{"@type":"Broadway\\\\Domain\\\\Metadata","values":[]},"payload":{"@type":"BartdeZwaan\\\\EventSourcing\\\\Async\\\\Serializer\\\\SimpleTestEvent","data":{"foo":"bar"}},"id":1,"recordedOn":{"@type":"Broadway\\\\Domain\\\\DateTime","dateTime":{"@type":"DateTime","date":"2015-11-29 18:24:55.072250","timezone_type":3,"timezone":"Europe\/Berlin"}}}';
+        return '{"@type":"Unkown\\\\Domain\\\\DomainMessage","playhead":1,"metadata":{"@type":"Broadway\\\\Domain\\\\Metadata","values":[]},"payload":{"@type":"Zwaan\\\\EventSourcing\\\\Serializer\\\\SimpleTestEvent","data":{"foo":"bar"}},"id":1,"recordedOn":{"@type":"Broadway\\\\Domain\\\\DateTime","dateTime":{"@type":"DateTime","date":"2015-11-29 18:24:55.072250","timezone_type":3,"timezone":"Europe\/Berlin"}}}';
     }
 }
 

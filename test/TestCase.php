@@ -1,6 +1,6 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async;
+namespace Zwaan\EventSourcing;
 
 use PHPUnit_Framework_TestCase;
 

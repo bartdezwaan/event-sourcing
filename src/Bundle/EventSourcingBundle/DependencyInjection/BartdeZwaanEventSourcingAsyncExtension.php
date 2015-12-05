@@ -1,6 +1,6 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\Bundle\EventSourcingAsyncBundle\DependencyInjection;
+namespace Zwaan\EventSourcing\Bundle\EventSourcingBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Loader;
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
  */
-class BartdeZwaanEventSourcingAsyncExtension extends Extension
+class ZwaanEventSourcingExtension extends Extension
 {
     /**
      * {@inheritdoc}
@@ -27,17 +27,17 @@ class BartdeZwaanEventSourcingAsyncExtension extends Extension
 
         $container->setAlias(
             'broadway.event_handling.event_bus',
-            'async.event_handling.event_bus'
+            'zwaan.event_handling.event_bus'
         );
 
         $container->setAlias(
             'broadway.serializer.payload',
-            'async.serializer'
+            'zwaan.serializer'
         );
 
         $container->setAlias(
             'broadway.serializer.metadata',
-            'async.serializer'
+            'zwaan.serializer'
         );
     }
 }

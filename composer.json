@@ -5,12 +5,12 @@
     "description": "async handling of broadway events",
     "autoload": {
         "psr-4": {
-            "BartdeZwaan\\EventSourcing\\Async\\": "src/"
+            "Zwaan\\EventSourcing\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "BartdeZwaan\\EventSourcing\\Async\\": "test/"
+            "Zwaan\\EventSourcing\\": "test/"
         }
     },
     "require": {

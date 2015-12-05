@@ -1,9 +1,9 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\EventHandling;
+namespace Zwaan\EventSourcing\EventHandling;
 
-use BartdeZwaan\EventSourcing\Async\Serializer\JsonSerializer;
-use BartdeZwaan\EventSourcing\Async\TestCase;
+use Zwaan\EventSourcing\Serializer\JsonSerializer;
+use Zwaan\EventSourcing\TestCase;
 use Broadway\Domain\DomainEventStream;
 use Broadway\Domain\DomainMessage;
 use Broadway\Domain\Metadata;

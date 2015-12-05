@@ -1,6 +1,6 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\MessageHandling\RabbitMQ;
+namespace Zwaan\EventSourcing\MessageHandling\RabbitMQ;
 
 interface Adapter
 {

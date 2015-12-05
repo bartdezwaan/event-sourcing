@@ -1,6 +1,6 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\Bundle\EventSourcingAsyncBundle\Command;
+namespace Zwaan\EventSourcing\Bundle\EventSourcingBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;

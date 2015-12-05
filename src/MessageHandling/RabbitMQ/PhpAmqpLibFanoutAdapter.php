@@ -1,6 +1,6 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\MessageHandling\RabbitMQ;
+namespace Zwaan\EventSourcing\MessageHandling\RabbitMQ;
 
 use Broadway\Domain\DomainMessage;
 use PhpAmqpLib\Message\AMQPMessage;

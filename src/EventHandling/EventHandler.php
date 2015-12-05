@@ -1,10 +1,10 @@
 <?php
 
-namespace BartdeZwaan\EventSourcing\Async\EventHandling;
+namespace Zwaan\EventSourcing\EventHandling;
 
 use Broadway\Domain\DomainMessage;
 
-interface MessageHandler
+interface EventHandler
 {
     /**
      * Listen to incoming messages.
