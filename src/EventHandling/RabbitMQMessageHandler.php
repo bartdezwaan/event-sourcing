@@ -2,32 +2,18 @@
 
 namespace BartdeZwaan\EventSourcing\Async\EventHandling;
 
-use BartdeZwaan\EventSourcing\Async\Serializer\Serializer;
+use BartdeZwaan\EventSourcing\Async\MessageHandling\RabbitMQ\Adapter;
 use Broadway\Domain\DomainMessage;
+use Broadway\Serializer\SerializerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
 class RabbitMQMessageHandler implements MessageHandler
 {
-    protected $connection;
-    protected $channel;
-    protected $exchangeName;
-    protected $queueName;
-    protected $serializer;
-
-    /**
-     * @param string               $exchangeName
-     * @param string               $queueName
-     * @param AMQPStreamConnection $connection
-     * @param Serializer           $serializer
-     */
-    public function __construct($exchangeName, $queueName, AMQPStreamConnection $connection, $serializer)
+    public function __construct(Adapter $adapter, SerializerInterface $serializer)
     {
-        $this->connection   = $connection;
-        $this->exchangeName = $exchangeName;
-        $this->queueName    = $queueName;
-        $this->serializer   = $serializer;
-        $this->initializeExchange();
+        $this->adapter    = $adapter;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -35,25 +21,11 @@ class RabbitMQMessageHandler implements MessageHandler
      */
     public function listen(AsyncEventBus $eventBus)
     {
-        $this->channel->queue_bind($this->queueName, $this->exchangeName);
-
         $callback = function($msg) use ($eventBus){
-            try {
-                $eventBus->handle($this->serializer->deserialize(json_decode($msg->body, true)));
-                $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-            } catch (\Exception $e) {
-                $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-            };
+            $eventBus->handle($this->serializer->deserialize(json_decode($msg->body, true)));
         };
 
-        $this->channel->basic_consume($this->queueName, '', false, false, false, false, $callback);
-
-        while(count($this->channel->callbacks)) {
-            $this->channel->wait();
-        }
-
-        $this->channel->close();
-        $this->connection->close();
+        $this->adapter->listen($callback);
     }
 
     /**
@@ -61,13 +33,8 @@ class RabbitMQMessageHandler implements MessageHandler
      */
     public function publish(DomainMessage $domainMessage)
     {
-        $msg = new AMQPMessage(json_encode($this->serializer->serialize($domainMessage)));
-
-        $this->channel->queue_bind($this->queueName, $this->exchangeName);
-        $this->channel->basic_publish($msg, $this->exchangeName);
-
-        $this->channel->close();
-        $this->connection->close();
+        $msg = json_encode($this->serializer->serialize($domainMessage));
+        $this->adapter->publish($msg);
     }
 
     private function initializeExchange()

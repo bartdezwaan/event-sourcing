@@ -2,6 +2,7 @@
 
 namespace BartdeZwaan\EventSourcing\Async\EventHandling;
 
+use BartdeZwaan\EventSourcing\Async\MessageHandling\RabbitMQ\InMemoryAdapter;
 use BartdeZwaan\EventSourcing\Async\Serializer\PhpSerializer;
 use BartdeZwaan\EventSourcing\Async\TestCase;
 use Broadway\Domain\DomainEventStream;
@@ -9,23 +10,25 @@ use Broadway\Domain\DomainMessage;
 use Broadway\Domain\Metadata;
 use Broadway\EventHandling\EventListenerInterface;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
 
 class AsyncEventBusTest extends TestCase
 {
     private $eventBus;
     private $messageHandler;
+    private $serializer;
 
     public function setUp()
     {
+        $this->serializer = new PhpSerializer();
         $this->eventBus = new AsyncEventBus($this->getMessageHandler());
     }
 
     private function getMessageHandler()
     {
         if (! $this->messageHandler) {
-            $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
-            $serializer = new PhpSerializer();
-            $this->messageHandler = new AsyncMessageHandler('testExchange', 'events_queue', $connection, $serializer);
+            $adapter = new InMemoryAdapter();
+            $this->messageHandler = new RabbitMQMessageHandler($adapter, $this->serializer);
         }
 
         return $this->messageHandler;
@@ -49,9 +52,129 @@ class AsyncEventBusTest extends TestCase
         $this->eventBus->listen();
     }
 
+    /**
+     * @test
+     */
+    public function it_publishes_events_to_subscribed_event_listeners()
+    {
+        $domainMessage1 = $this->createDomainMessage(array());
+        $domainMessage2 = $this->createDomainMessage(array());
+
+        $domainEventStream = new DomainEventStream(array($domainMessage1, $domainMessage2));
+
+        $eventListener1 = $this->createEventListenerMock();
+        $eventListener1
+            ->expects($this->at(0))
+            ->method('handle')
+            ->with($domainMessage1);
+        $eventListener1
+            ->expects($this->at(1))
+            ->method('handle')
+            ->with($domainMessage2);
+
+        $eventListener2 = $this->createEventListenerMock();
+        $eventListener2
+            ->expects($this->at(0))
+            ->method('handle')
+            ->with($domainMessage1);
+        $eventListener2
+            ->expects($this->at(1))
+            ->method('handle')
+            ->with($domainMessage2);
+
+        $this->eventBus->subscribe($eventListener1);
+        $this->eventBus->subscribe($eventListener2);
+        $this->eventBus->publish($domainEventStream);
+        $this->eventBus->listen();
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_still_publish_events_after_exception()
+    {
+        $domainMessage1 = $this->createDomainMessage(array('foo' => 'bar'));
+        $domainMessage2 = $this->createDomainMessage(array('foo' => 'bas'));
+
+        $domainEventStream1 = new DomainEventStream(array($domainMessage1));
+        $domainEventStream2 = new DomainEventStream(array($domainMessage2));
+
+        $messageHandler = $this->createMessageHandlerMock();
+        $messageHandler
+            ->expects($this->at(0))
+            ->method('publish')
+            ->with($domainMessage1)
+            ->will($this->throwException(new \Exception('I failed.')));
+
+        $messageHandler
+            ->expects($this->at(1))
+            ->method('publish')
+            ->with($domainMessage2);
+
+        $eventBus = new AsyncEventBus($messageHandler);
+
+        try {
+            $eventBus->publish($domainEventStream1);
+        } catch (\Exception $e) {
+            $this->assertEquals('I failed.', $e->getMessage());
+        }
+
+        $eventBus->publish($domainEventStream2);
+    }
+
+    /**
+     * @test
+     */
+    public function it_should_still_listen_to_events_after_exception()
+    {
+        $domainMessage1 = $this->createDomainMessage(array());
+        $domainMessage2 = $this->createDomainMessage(array());
+
+        $domainEventStream = new DomainEventStream(array($domainMessage1, $domainMessage2));
+
+        $eventListener1 = $this->createEventListenerMock();
+        $eventListener1
+            ->expects($this->at(0))
+            ->method('handle')
+            ->with($domainMessage1)
+            ->will($this->throwException(new \Exception('I failed.')));
+        $eventListener1
+            ->expects($this->at(1))
+            ->method('handle')
+            ->with($domainMessage2);
+
+        $eventListener2 = $this->createEventListenerMock();
+        $eventListener2
+            ->expects($this->at(0))
+            ->method('handle')
+            ->with($domainMessage1);
+        $eventListener2
+            ->expects($this->at(1))
+            ->method('handle')
+            ->with($domainMessage2);
+
+        $this->eventBus->subscribe($eventListener1);
+        $this->eventBus->subscribe($eventListener2);
+
+        $this->eventBus->publish($domainEventStream);
+
+        try {
+            $this->eventBus->listen();
+        } catch (\Exception $e) {
+            $this->assertEquals('I failed.', $e->getMessage());
+        }
+
+        $this->eventBus->listen();
+    }
+
     private function createEventListenerMock()
     {
         return $this->getMockBuilder('Broadway\EventHandling\EventListenerInterface')->getMock();
+    }
+
+    private function createMessageHandlerMock()
+    {
+        return $this->getMockBuilder('BartdeZwaan\EventSourcing\Async\EventHandling\MessageHandler')->getMock();
     }
 
     private function createDomainMessage($payload)
@@ -67,33 +190,6 @@ class SimpleEventBusTestEvent
     public function __construct($data)
     {
         $this->data = $data;
-    }
-}
-
-class AsyncMessageHandler extends RabbitMQMessageHandler
-{
-    /**
-     * {@inheritDoc}
-     */
-    public function listen(AsyncEventBus $eventBus)
-    {
-        $connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
-        $this->channel = $connection->channel();
-        $this->channel->queue_bind($this->queueName, $this->exchangeName);
-
-        $callback = function($msg) use ($eventBus){
-            $eventBus->handle(unserialize($msg->body));
-            $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-        };
-
-        $this->channel->basic_consume($this->queueName, '', false, false, false, false, $callback);
-        while(count($this->channel->callbacks)) {
-            $this->channel->wait();
-            $this->channel->callbacks = [];
-        }
-
-        $this->channel->close();
-        $this->connection->close();
     }
 }
 
