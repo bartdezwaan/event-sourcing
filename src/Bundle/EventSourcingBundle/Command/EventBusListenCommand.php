@@ -12,7 +12,7 @@ class EventBusListenCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('eventbus:listen')
+            ->setName('zwaan:eventbus:listen')
             ->setDescription('Start event listener');
     }
 

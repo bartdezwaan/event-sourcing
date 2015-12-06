@@ -1,11 +1,15 @@
 services:
     zwaan.event_handling.event_bus:
         class: Zwaan\EventSourcing\EventHandling\AsyncEventBus
-        arguments: [@async.message_handler]
+        arguments: [@zwaan.event_handler]
 
-    zwaan.message_handler:
-        class: Zwaan\EventSourcing\EventHandling\RabbitMQMessageHandler
-        arguments: [%exchange_name%, %queue_name%, @amqp_stream_connection , @async.serializer]
+    zwaan.event_handler:
+        class: Zwaan\EventSourcing\EventHandling\RabbitMQEventHandler
+        arguments: [@zwaan.rabbitmq_adapter.php_amqp_lib, @zwaan.serializer]
+
+    zwaan.rabbitmq_adapter.php_amqp_lib:
+        class: Zwaan\EventSourcing\MessageHandling\RabbitMQ\PhpAmqpLibFanoutAdapter
+        arguments: [%exchange_name%, %queue_name%, @amqp_stream_connection]
 
     zwaan.serializer:
         class: Zwaan\EventSourcing\Serializer\PhpSerializer
