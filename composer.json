@@ -1,5 +1,5 @@
 {
-    "name": "bartdezwaan/event-sourcing-async",
+    "name": "bartdezwaan/event-sourcing",
     "license": "MIT",
     "type": "library",
     "description": "async handling of broadway events",
