@@ -60,9 +60,6 @@ class PhpAmqpLibFanoutAdapter implements Adapter
 
         $this->channel->queue_bind($this->queueName, $this->exchangeName);
         $this->channel->basic_publish($msg, $this->exchangeName);
-
-        $this->channel->close();
-        $this->connection->close();
     }
 
     private function initializeExchange()
@@ -70,6 +67,7 @@ class PhpAmqpLibFanoutAdapter implements Adapter
         $this->channel = $this->connection->channel();
         $this->channel->exchange_declare($this->exchangeName, 'fanout', false, false, false);
         $this->channel->queue_declare($this->queueName, false, false, false, false);
+        $this->channel->queue_bind($this->queueName, $this->exchangeName);
     }
 }
 

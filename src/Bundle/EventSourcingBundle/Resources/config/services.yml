@@ -7,6 +7,10 @@ services:
         class: Zwaan\EventSourcing\EventHandling\RabbitMQEventHandler
         arguments: [@zwaan.rabbitmq_adapter.php_amqp_lib, @zwaan.serializer]
 
+    zwaan.rabbitmq_adapter.php_amqp_lib.factory:
+        class: Zwaan\EventSourcing\MessageHandling\RabbitMQ\PhpAmqpLibFanoutAdapterFactory
+        arguments: [@amqp_stream_connection]
+
     zwaan.rabbitmq_adapter.php_amqp_lib:
         class: Zwaan\EventSourcing\MessageHandling\RabbitMQ\PhpAmqpLibFanoutAdapter
         arguments: [%exchange_name%, %queue_name%, @amqp_stream_connection]
@@ -14,6 +18,13 @@ services:
     zwaan.serializer:
         class: Zwaan\EventSourcing\Serializer\PhpSerializer
 
+    zwaan.message_listener:
+        class: Zwaan\EventSourcing\MessageHandling\RabbitMQMessageListener
+        arguments: [@zwaan.serializer, @broadway.simple.event_bus, @zwaan.rabbitmq_adapter.php_amqp_lib.factory]
+
     amqp_stream_connection:
         class: PhpAmqpLib\Connection\AMQPStreamConnection
         arguments: ['localhost', 5672, 'guest', 'guest']
+
+    broadway.simple.event_bus:
+        class: Broadway\EventHandling\SimpleEventBus
