@@ -10,6 +10,10 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 
 class RabbitMQEventHandler implements EventHandler
 {
+    /**
+     * @param Adapter             $adapter
+     * @param SerializerInterface $serializer
+     */
     public function __construct(Adapter $adapter, SerializerInterface $serializer)
     {
         $this->adapter    = $adapter;
@@ -35,13 +39,6 @@ class RabbitMQEventHandler implements EventHandler
     {
         $msg = json_encode($this->serializer->serialize($domainMessage));
         $this->adapter->publish($msg);
-    }
-
-    private function initializeExchange()
-    {
-        $this->channel = $this->connection->channel();
-        $this->channel->exchange_declare($this->exchangeName, 'fanout', false, false, false);
-        $this->channel->queue_declare($this->queueName, false, false, false, false);
     }
 }
 
