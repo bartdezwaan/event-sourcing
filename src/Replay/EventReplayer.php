@@ -19,6 +19,8 @@ use Rhumsaa\Uuid\Uuid;
 
 class EventReplayer
 {
+    const END = 'end';
+
     private $connection;
 
     private $payloadSerializer;
@@ -54,6 +56,11 @@ class EventReplayer
         }
     }
 
+    /**
+     * Yields DomainMessage
+     * 
+     * @return Generator
+     */
     public function events()
     {
         $statement = $this->prepareLoadStatement();
@@ -65,6 +72,8 @@ class EventReplayer
 
             yield $event;
         }
+
+        yield self::END;
     }
 
     private function convertStorageValueToIdentifier($id)

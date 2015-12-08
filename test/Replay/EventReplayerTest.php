@@ -52,12 +52,15 @@ class EventReplayerTest extends TestCase
     {
         $count = 0;
         $events = $this->replayer->events();
+        $playedEvents = [];
 
         foreach ($events as $event) {
+            $playedEvents[] = $event;
             $count++;
         }
 
-        $this->assertEquals(4, $count);
+        $this->assertEquals(5, $count);
+        $this->assertEquals(EventReplayer::END, $playedEvents[4]);
     }
 }
 
