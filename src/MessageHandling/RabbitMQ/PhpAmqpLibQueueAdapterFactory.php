@@ -4,7 +4,7 @@ namespace Zwaan\EventSourcing\MessageHandling\RabbitMQ;
 
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 
-class PhpAmqpLibFQueueAdapterFactory
+class PhpAmqpLibQueueAdapterFactory
 {
     private $connection;
 

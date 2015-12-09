@@ -2,17 +2,15 @@
 
 namespace Zwaan\EventSourcing\Replay;
 
+use Broadway\Serializer\SerializerInterface;
+use Zwaan\EventSourcing\MessageHandling\RabbitMQ\PhpAmqpLibQueueAdapterFactory;
+
 class RabbitMQReplayRequestHandler
 {
     /**
      * @var SerializerInterface
      */
     private $serializer;
-
-    /**
-     * @var EventBusInterface
-     */
-    private $eventBus;
 
     /**
      * @var PhpAmqpLibQueueAdapterFactory
@@ -26,14 +24,12 @@ class RabbitMQReplayRequestHandler
 
     /**
      * @param SerializerInterface           $serializer
-     * @param EventBusInterface             $eventBus
      * @param PhpAmqpLibQueueAdapterFactory $queueFactory
      * @param EventReplayer                 $eventReplayer
      */
-    public function __construct(SerializerInterface $serializer, EventBusInterface $eventBus, PhpAmqpLibQueueAdapterFactory $queueFactory, EventReplayer $eventReplayer)
+    public function __construct(SerializerInterface $serializer, PhpAmqpLibQueueAdapterFactory $queueFactory, EventReplayer $eventReplayer)
     {
         $this->serializer    = $serializer;
-        $this->eventBus      = $eventBus;
         $this->queueFactory  = $queueFactory;
         $this->eventReplayer = $eventReplayer;
     }

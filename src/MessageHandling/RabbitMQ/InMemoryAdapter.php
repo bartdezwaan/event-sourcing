@@ -38,5 +38,13 @@ class InMemoryAdapter implements Adapter
 
         $this->queue[] = $msg;
     }
+
+    /**
+     * @return array<AMQPMessage>
+     */
+    public function queue()
+    {
+        return $this->queue;
+    }
 }
 
