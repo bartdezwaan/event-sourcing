@@ -19,8 +19,6 @@ use Rhumsaa\Uuid\Uuid;
 
 class EventReplayer
 {
-    const END = 'end';
-
     private $connection;
 
     private $payloadSerializer;
@@ -72,8 +70,6 @@ class EventReplayer
 
             yield $event;
         }
-
-        yield self::END;
     }
 
     private function convertStorageValueToIdentifier($id)

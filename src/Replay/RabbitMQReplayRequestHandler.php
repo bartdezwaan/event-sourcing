@@ -48,6 +48,8 @@ class RabbitMQReplayRequestHandler
             $msg = json_encode($this->serializer->serialize($domainMessage));
             $adapter->publish($msg);
         }
+
+        $adapter->publish('finished');
     }
 }
 

@@ -46,7 +46,8 @@ class RabbitMQReplayRequestHandlerTest extends TestCase
 
         $this->replayRequestHandler->replayTo('aQueueName');
 
-        $this->assertCount(4, $adapter->queue());
+        $this->assertCount(5, $adapter->queue());
+        $this->assertEquals('finished', $adapter->queue()[4]->body);
     }
 
     private function getEventReplayerMock()

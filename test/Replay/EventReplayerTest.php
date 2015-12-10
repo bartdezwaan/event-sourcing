@@ -59,8 +59,7 @@ class EventReplayerTest extends TestCase
             $count++;
         }
 
-        $this->assertEquals(5, $count);
-        $this->assertEquals(EventReplayer::END, $playedEvents[4]);
+        $this->assertEquals(4, $count);
     }
 }
 
