@@ -32,8 +32,8 @@ class RabbitMQReplayListener
      */
     public function __construct(SerializerInterface $serializer, EventBusInterface $eventBus, PhpAmqpLibQueueAdapterFactory $queueFactory)
     {
-        $this->serializer    = $serializer;
-        $this->eventBus      = $eventBus;
+        $this->serializer   = $serializer;
+        $this->eventBus     = $eventBus;
         $this->queueFactory = $queueFactory;
     }
 
