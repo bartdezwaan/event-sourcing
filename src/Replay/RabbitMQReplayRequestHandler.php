@@ -5,7 +5,7 @@ namespace Zwaan\EventSourcing\Replay;
 use Broadway\Serializer\SerializerInterface;
 use Zwaan\EventSourcing\MessageHandling\RabbitMQ\PhpAmqpLibQueueAdapterFactory;
 
-class RabbitMQReplayRequestHandler
+class RabbitMQReplayRequestHandler implements ReplayRequestHandler
 {
     /**
      * @var SerializerInterface
@@ -18,30 +18,20 @@ class RabbitMQReplayRequestHandler
     private $queueFactory;
 
     /**
-     * @var EventReplayer
-     */
-    private $eventReplayer;
-
-    /**
      * @param SerializerInterface           $serializer
      * @param PhpAmqpLibQueueAdapterFactory $queueFactory
-     * @param EventReplayer                 $eventReplayer
      */
-    public function __construct(SerializerInterface $serializer, PhpAmqpLibQueueAdapterFactory $queueFactory, EventReplayer $eventReplayer)
+    public function __construct(SerializerInterface $serializer, PhpAmqpLibQueueAdapterFactory $queueFactory)
     {
-        $this->serializer    = $serializer;
-        $this->queueFactory  = $queueFactory;
-        $this->eventReplayer = $eventReplayer;
+        $this->serializer   = $serializer;
+        $this->queueFactory = $queueFactory;
     }
 
     /**
-     * Push events to a rabbitmq queue.
-     *
-     * @param string $queueName
+     * {@inheritDoc}
      */
-    public function replayTo($queueName)
+    public function replay($events, $queueName)
     {
-        $events  = $this->eventReplayer->events();
         $adapter = $this->queueFactory->create($queueName);
 
         foreach ($events as $domainMessage) {

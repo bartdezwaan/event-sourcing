@@ -14,6 +14,7 @@ use Zwaan\EventSourcing\TestCase;
 
 class RabbitMQReplayRequestHandlerTest extends TestCase
 {
+    private $eventRepository;
     private $queueFactory;
     private $replayRequestHandler;
 
@@ -22,7 +23,8 @@ class RabbitMQReplayRequestHandlerTest extends TestCase
         $serializer = new PhpSerializer();
         $this->replayRequestHandler = new RabbitMQReplayRequestHandler(
             $serializer,
-            $this->getQueueAdapterFactoryMock()
+            $this->getQueueAdapterFactoryMock(),
+            $this->getEventRepositoryMock()
         );
     }
 
@@ -37,10 +39,26 @@ class RabbitMQReplayRequestHandlerTest extends TestCase
             ->method('create')
             ->will($this->returnValue($adapter));
 
-        $this->replayRequestHandler->replay($this->getDomainMessages(), 'aQueueName');
+        $eventRepository = $this->getEventRepositoryMock()
+            ->expects($this->once())
+            ->method('events')
+            ->will($this->returnValue($this->getDomainMessages()));
+
+        $this->replayRequestHandler->replayTo('aQueueName');
 
         $this->assertCount(5, $adapter->queue());
         $this->assertEquals('finished', $adapter->queue()[4]->body);
+    }
+
+    private function getEventRepositoryMock()
+    {
+        if (! $this->eventRepository) {
+            $this->eventRepository = $this->getMockBuilder('Zwaan\EventSourcing\Replay\EventRepository')
+                ->disableOriginalConstructor()
+                ->getMock();
+        }
+
+        return $this->eventRepository;
     }
 
     private function getQueueAdapterFactoryMock()

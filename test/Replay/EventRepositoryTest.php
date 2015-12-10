@@ -13,10 +13,10 @@ use Doctrine\DBAL\DriverManager;
 use Rhumsaa\Uuid\Uuid;
 use Zwaan\EventSourcing\TestCase;
 
-class EventReplayerTest extends TestCase
+class EventRepositoryTest extends TestCase
 {
     private $eventStore;
-    private $replayer;
+    private $repository;
 
     public function setUp()
     {
@@ -24,7 +24,7 @@ class EventReplayerTest extends TestCase
         $schemaManager    = $connection->getSchemaManager();
         $schema           = $schemaManager->createSchema();
         $this->eventStore = new DBALEventStore($connection, new SimpleInterfaceSerializer(), new SimpleInterfaceSerializer(), 'events');
-        $this->replayer = new EventReplayer($connection, new SimpleInterfaceSerializer(), new SimpleInterfaceSerializer(), 'events');
+        $this->repository = new EventRepository($connection, new SimpleInterfaceSerializer(), new SimpleInterfaceSerializer(), 'events');
 
         $table = $this->eventStore->configureSchema($schema);
         $schemaManager->createTable($table);
@@ -51,7 +51,7 @@ class EventReplayerTest extends TestCase
     public function can_retrieve_all_events()
     {
         $count = 0;
-        $events = $this->replayer->events();
+        $events = $this->repository->events();
         $playedEvents = [];
 
         foreach ($events as $event) {
