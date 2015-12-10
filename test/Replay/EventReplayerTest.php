@@ -12,26 +12,28 @@ use Zwaan\EventSourcing\MessageHandling\RabbitMQ\InMemoryAdapter;
 use Zwaan\EventSourcing\Serializer\PhpSerializer;
 use Zwaan\EventSourcing\TestCase;
 
-class RabbitMQReplayRequestHandlerTest extends TestCase
+class EventReplayerTest extends TestCase
 {
     private $eventRepository;
     private $queueFactory;
     private $replayRequestHandler;
+    private $eventReplayer;
 
     public function setUp()
     {
         $serializer = new PhpSerializer();
         $this->replayRequestHandler = new RabbitMQReplayRequestHandler(
             $serializer,
-            $this->getQueueAdapterFactoryMock(),
-            $this->getEventRepositoryMock()
+            $this->getQueueAdapterFactoryMock()
         );
+
+        $this->eventReplayer = new EventReplayer($this->replayRequestHandler, $this->getEventRepositoryMock());
     }
 
     /**
      * @test
      */
-    public function can_replay_to_queue()
+    public function can_replay_events_to_receiver()
     {
         $adapter = new InMemoryAdapter();
         $queueFactory = $this->getQueueAdapterFactoryMock()
@@ -44,7 +46,7 @@ class RabbitMQReplayRequestHandlerTest extends TestCase
             ->method('events')
             ->will($this->returnValue($this->getDomainMessages()));
 
-        $this->replayRequestHandler->replayTo('aQueueName');
+        $this->eventReplayer->replayTo('aQueueName');
 
         $this->assertCount(5, $adapter->queue());
         $this->assertEquals('finished', $adapter->queue()[4]->body);

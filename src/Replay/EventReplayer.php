@@ -4,7 +4,7 @@ namespace Zwaan\EventSourcing\Replay;
 
 class EventReplayer
 {
-    private $preReplayHandlers;
+    private $preReplayHandlers = [];
 
     /**
      * @var EventRepository
