@@ -52,6 +52,42 @@ class EventReplayerTest extends TestCase
         $this->assertEquals('finished', $adapter->queue()[4]->body);
     }
 
+    /**
+     * @test
+     */
+    public function helpers_will_be_triggered_before_replaying()
+    {
+        $helper1 = $this->getHelperMock();
+        $helper1
+            ->expects($this->once())
+            ->method('execute');
+        $helper2 = $this->getHelperMock();
+        $helper2
+            ->expects($this->once())
+            ->method('execute');
+
+        $this->eventReplayer->subscribePreReplayHelper($helper1);
+        $this->eventReplayer->subscribePreReplayHelper($helper2);
+
+        $adapter = new InMemoryAdapter();
+        $queueFactory = $this->getQueueAdapterFactoryMock()
+            ->expects($this->once())
+            ->method('create')
+            ->will($this->returnValue($adapter));
+
+        $eventRepository = $this->getEventRepositoryMock()
+            ->expects($this->once())
+            ->method('events')
+            ->will($this->returnValue($this->getDomainMessages()));
+
+        $this->eventReplayer->replayTo('aQueueName');
+    }
+
+    private function getHelperMock()
+    {
+        return $this->getMock('Zwaan\EventSourcing\Replay\Helper');
+    }
+
     private function getEventRepositoryMock()
     {
         if (! $this->eventRepository) {

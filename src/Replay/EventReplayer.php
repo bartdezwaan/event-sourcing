@@ -4,7 +4,10 @@ namespace Zwaan\EventSourcing\Replay;
 
 class EventReplayer
 {
-    private $preReplayHandlers = [];
+    /**
+     * @var Helper
+     */
+    private $preReplayHelpers = [];
 
     /**
      * @var EventRepository
@@ -21,9 +24,12 @@ class EventReplayer
         $this->eventRepository      = $eventRepository;
     }
 
-    public function subscribePreReplayHandler(HandlerInterface $handler)
+    /**
+     * @param Helper $helper
+     */
+    public function subscribePreReplayHelper(Helper $helper)
     {
-        $this->preReplayHandlers[] = $handler;
+        $this->preReplayHelpers[] = $helper;
     }
 
     /**
@@ -43,8 +49,8 @@ class EventReplayer
      */
     private function preReplay()
     {
-        foreach ($this->preReplayHandlers as $handler) {
-            $handler->handle();
+        foreach ($this->preReplayHelpers as $helper) {
+            $helper->execute();
         }
     }
 }
