@@ -6,13 +6,24 @@ use GuzzleHttp\Client;
 
 class EventRequester
 {
+    /**
+     * @var Client
+     */
     private $client;
+
+    /**
+     * @var ReplayListener
+     */
     private $replayListener;
     /**
      * @var Helper
      */
     private $preReplayHelpers = [];
 
+    /**
+     * @param Client         $client
+     * @param ReplayListener $replayListener
+     */
     public function __construct(Client $client, ReplayListener $replayListener)
     {
         $this->client = $client;
@@ -27,11 +38,16 @@ class EventRequester
         $this->preReplayHelpers[] = $helper;
     }
 
-    public function getEventsFrom($sender, $endPoint)
+    /**
+     * @param mixed $toAddress   The address to which the events should be send
+     * @param mixed $endPoint    The endpoint on which to trigger replaying
+     * @param array $projections The projections that replaying should be applied to. Empty value means all.
+     */
+    public function replayEvents($toAddress, $endPoint, array $projections = array())
     {
         $this->preReplay();
-        $this->triggerReplay($endPoint);
-        $this->replayListener->listen($sender);
+        $this->triggerReplay($toAddress, $endPoint);
+        $this->replayListener->listen($toAddress);
     }
 
     /**
@@ -44,9 +60,17 @@ class EventRequester
         }
     }
 
-    private function triggerReplay($endpoint)
+    /**
+     * @param mixed  $sender
+     * @param string $endpoint
+     */
+    private function triggerReplay($toAddress, $endpoint)
     {
-        $response = $this->client->request('GET', $endpoint);
+        $response = $this->client->request('POST', $endpoint, [
+            'form_params' => [
+                'response_address' => $toAddress
+            ]
+        ]);
     }
 }
 
