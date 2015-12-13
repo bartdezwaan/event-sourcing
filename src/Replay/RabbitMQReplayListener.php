@@ -8,7 +8,7 @@ use Broadway\Domain\DomainEventStream;
 use Broadway\EventHandling\EventBusInterface;
 use Broadway\Serializer\SerializerInterface;
 
-class RabbitMQReplayListener
+class RabbitMQReplayListener implements ReplayListener
 {
     /**
      * @var SerializerInterface
