@@ -7,4 +7,9 @@ php:
   - hhvm
   - nightly
 
+install:
+    - travis_retry composer self-update
+    - travis_retry composer install --ignore-platform-reqs
+    - composer info -i
+
 script: phpunit
