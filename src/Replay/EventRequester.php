@@ -64,9 +64,9 @@ class EventRequester
      * @param mixed  $sender
      * @param string $endpoint
      */
-    private function triggerReplay($toAddress, $endpoint)
+    private function triggerReplay($toAddress, $domain)
     {
-        $response = $this->client->request('POST', $endpoint, [
+        $response = $this->client->request('POST', $domain . '/events/publish', [
             'form_params' => [
                 'response_address' => $toAddress
             ]
