@@ -7,6 +7,9 @@ php:
   - hhvm
   - nightly
 
+before_script:
+    - echo 'date.timezone = "Europe/Berlin"' >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini'
+
 install:
     - travis_retry composer self-update
     - travis_retry composer install --ignore-platform-reqs
