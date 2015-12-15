@@ -11,6 +11,10 @@ services:
         class: Zwaan\EventSourcing\MessageHandling\RabbitMQ\PhpAmqpLibFanoutAdapterFactory
         arguments: [@amqp_stream_connection]
 
+    zwaan.rabbitmq_adapter.php_amqp_lib.queue.factory:
+        class: Zwaan\EventSourcing\MessageHandling\RabbitMQ\PhpAmqpLibQueueAdapterFactory
+        arguments: [@amqp_stream_connection]
+
     zwaan.rabbitmq_adapter.php_amqp_lib:
         class: Zwaan\EventSourcing\MessageHandling\RabbitMQ\PhpAmqpLibFanoutAdapter
         arguments: [%exchange_name%, %queue_name%, @amqp_stream_connection]
@@ -22,9 +26,35 @@ services:
         class: Zwaan\EventSourcing\MessageHandling\RabbitMQMessageListener
         arguments: [@zwaan.serializer, @broadway.simple.event_bus, @zwaan.rabbitmq_adapter.php_amqp_lib.factory]
 
+    zwaan.replay.event_requester:
+        class: Zwaan\EventSourcing\Replay\EventRequester
+        arguments: [@guzzle_client, @zwaan.replay.replay_listener]
+
+    zwaan.replay.replay_listener:
+        class: Zwaan\EventSourcing\Replay\RabbitMQReplayListener
+        arguments: [@zwaan.serializer, @zwaan.replay.event_bus, @zwaan.rabbitmq_adapter.php_amqp_lib.queue.factory]
+
+    zwaan.replay.event_replayer:
+        class: Zwaan\EventSourcing\Replay\EventReplayer
+        arguments: [@zwaan.replay.request_handler, @zwaan.replay.event_repository]
+
+    zwaan.replay.request_handler:
+        class: Zwaan\EventSourcing\Replay\RabbitMQReplayRequestHandler
+        arguments: [@zwaan.serializer, @zwaan.rabbitmq_adapter.php_amqp_lib.queue.factory]
+
+    zwaan.replay.event_repository:
+        class: Zwaan\EventSourcing\Replay\EventRepository
+        arguments: [@broadway.event_store.dbal.connection, @broadway.serializer.payload, @broadway.serializer.metadata, %broadway.event_store.dbal.table%, %broadway.event_store.dbal.use_binary%]
+
     amqp_stream_connection:
         class: PhpAmqpLib\Connection\AMQPStreamConnection
         arguments: ['localhost', 5672, 'guest', 'guest']
 
     broadway.simple.event_bus:
         class: Broadway\EventHandling\SimpleEventBus
+
+    zwaan.replay.event_bus:
+        class: Broadway\EventHandling\SimpleEventBus
+
+    guzzle_client:
+        class: GuzzleHttp\Client

@@ -37,7 +37,7 @@ class PhpAmqpLibQueueAdapter implements Adapter
             };
         };
 
-        $this->channel->basic_consume($this->queueName, '', false, false, true, false, $consumerCallback);
+        $this->channel->basic_consume($this->queueName, '', false, false, false, false, $consumerCallback);
 
         while(count($this->channel->callbacks)) {
             $this->channel->wait();
@@ -59,7 +59,8 @@ class PhpAmqpLibQueueAdapter implements Adapter
 
     private function initializeQueue()
     {
-        $this->channel->queue_declare($this->queueName, false, false, true, false);
+        $this->channel = $this->connection->channel();
+        $this->channel->queue_declare($this->queueName, false, false, false, false);
     }
 }
 
