@@ -1,3 +1,4 @@
-cottage_centre_property_homepage:
-    path:     /hello/{name}
-    defaults: { _controller: CottageCentrePropertyBundle:Default:index }
+zwaan_event_sourcing_replay_publish:
+    path:     /events/publish
+    defaults: { _controller: ZwaanEventSourcingBundle:Replay:index }
+    methods:  [POST]
