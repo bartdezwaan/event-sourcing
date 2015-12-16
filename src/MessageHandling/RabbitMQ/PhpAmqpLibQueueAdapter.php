@@ -57,6 +57,11 @@ class PhpAmqpLibQueueAdapter implements Adapter
         $this->channel->basic_publish($msg, '', $this->queueName);
     }
 
+    public function delete()
+    {
+        $this->channel->queue_delete($this->queueName);
+    }
+
     private function initializeQueue()
     {
         $this->channel = $this->connection->channel();

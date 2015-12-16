@@ -46,10 +46,10 @@ class RabbitMQReplayListener implements ReplayListener
         $adapter = $this->queueFactory->create($queueName);
 
         $eventBus = $this->eventBus;
-        $callback = function($msg) use ($eventBus){
+        $callback = function($msg) use ($eventBus, $adapter){
             if ($msg->body == 'finished') {
                 $msg->delivery_info['channel']->basic_ack($msg->delivery_info['delivery_tag']);
-                var_dump('done');
+                $adapter->delete();
                 exit;
             }
             $this->eventBus->publish($this->getDomainEventStream($msg->body));
