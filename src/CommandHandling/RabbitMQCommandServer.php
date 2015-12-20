@@ -1,8 +1,10 @@
 <?php
 
-namespace Broadway\CommandHandling;
+namespace Zwaan\EventSourcing\CommandHandling;
 
 use Broadway\Serializer\SerializerInterface;
+use PhpAmqpLib\Connection\AMQPStreamConnection;
+use PhpAmqpLib\Message\AMQPMessage;
 
 class RabbitMQCommandServer
 {
@@ -62,7 +64,7 @@ class RabbitMQCommandServer
 
         };
 
-        $this->channel->basic_consume($this->queueName, '', false, false, false, false, $callback);
+        $this->channel->basic_consume(self::QUEUE_NAME, '', false, false, false, false, $callback);
 
         while(count($this->channel->callbacks)) {
             $this->channel->wait();

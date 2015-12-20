@@ -46,6 +46,18 @@ services:
         class: Zwaan\EventSourcing\Replay\EventRepository
         arguments: [@broadway.event_store.dbal.connection, @broadway.serializer.payload, @broadway.serializer.metadata, %broadway.event_store.dbal.table%, %broadway.event_store.dbal.use_binary%]
 
+    zwaan.command.server:
+        class: Zwaan\EventSourcing\CommandHandling\RabbitMQCommandServer
+        arguments: [@zwaan.serializer, @amqp_stream_connection]
+
+    zwaan.command.dispatcher:
+        class: Zwaan\EventSourcing\CommandHandling\RabbitMQCommandDispatcher
+        arguments: [@zwaan.serializer, @amqp_stream_connection]
+
+    zwaan.command.bus:
+        class: Zwaan\EventSourcing\CommandHandling\RabbitMQCommandBus
+        arguments: [@zwaan.command.dispatcher, @zwaan.command.server]
+
     amqp_stream_connection:
         class: PhpAmqpLib\Connection\AMQPStreamConnection
         arguments: ['localhost', 5672, 'guest', 'guest']

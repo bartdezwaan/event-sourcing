@@ -1,6 +1,6 @@
 <?php
 
-namespace Broadway\CommandHandling;
+namespace Zwaan\EventSourcing\CommandHandling;
 
 use Broadway\CommandHandling\Exception\CommandNotAnObjectException;
 use Broadway\Serializer\SerializerInterface;
@@ -9,6 +9,8 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class RabbitMQCommandDispatcher implements CommandDispatcher
 {
+    const EXCHANGE_NAME = 'command_handling';
+
     /**
      * @var SerializerInterface
      */
@@ -19,6 +21,8 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
     private $channel;
 
     private $response;
+
+    private $callback_queue;
 
     /**
      * @param SerializerInterface  $serializer
@@ -40,7 +44,7 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
             throw new CommandNotAnObjectException();
         }
 
-        $serializedCommand = $this->serializer->serialize($command);
+        $serializedCommand = json_encode($this->serializer->serialize($command));
         $this->response = null;
         $this->corr_id = uniqid();
 
@@ -52,10 +56,10 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
             )
         );
 
-        $this->channel->basic_publish($msg, 'command_handling', 'command');
+        $this->channel->basic_publish($msg, self::EXCHANGE_NAME, 'command');
 
         while(!$this->response) {
-            $this->channel->wait();
+            $this->channel->wait(null, false, 10);
         }
 
         return $this->response;
@@ -64,7 +68,7 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
     private function init()
     {
         $this->channel = $this->connection->channel();
-        $this->channel->exchange_declare('command_handling', 'topic', false, false, false);
+        $this->channel->exchange_declare(self::EXCHANGE_NAME, 'topic', false, false, false);
 
         list($this->callback_queue, ,) = $this->channel->queue_declare(
             "", false, false, true, false
@@ -83,5 +87,4 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
         }
     }
 }
-
 

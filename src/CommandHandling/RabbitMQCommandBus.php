@@ -1,6 +1,6 @@
 <?php
 
-namespace Broadway\CommandHandling;
+namespace Zwaan\EventSourcing\CommandHandling;
 
 use Broadway\CommandHandling\CommandHandlerInterface;
 
