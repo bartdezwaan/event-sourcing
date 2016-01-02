@@ -57,12 +57,12 @@ class RabbitMQCommandServer
                     $req->delivery_info['channel']->basic_publish(
                         $msg, '', $req->get('reply_to')
                     );
-
-                    $req->delivery_info['channel']->basic_ack(
-                        $req->delivery_info['delivery_tag']
-                    );
                 }
             }
+
+            $req->delivery_info['channel']->basic_ack(
+                $req->delivery_info['delivery_tag']
+            );
 
         };
 
