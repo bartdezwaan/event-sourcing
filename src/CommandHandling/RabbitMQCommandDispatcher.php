@@ -32,7 +32,6 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
     {
         $this->serializer = $serializer;
         $this->connection = $connection;
-        $this->init();
     }
 
     /**
@@ -40,6 +39,8 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
      */
     public function dispatch($command)
     {
+        $this->init();
+
         if (! is_object($command)) {
             throw new CommandNotAnObjectException();
         }
@@ -70,6 +71,7 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
         $this->channel = $this->connection->channel();
         $this->channel->exchange_declare(self::EXCHANGE_NAME, 'topic', false, false, false);
 
+        echo "create dispatcher queue";
         list($this->callback_queue, ,) = $this->channel->queue_declare(
             "", false, false, true, false
         );

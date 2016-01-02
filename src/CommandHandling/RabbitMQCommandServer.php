@@ -8,7 +8,6 @@ use PhpAmqpLib\Message\AMQPMessage;
 
 class RabbitMQCommandServer
 {
-    const QUEUE_NAME = 'command_queue';
     const EXCHANGE_NAME = 'command_handling';
 
     /**
@@ -22,6 +21,8 @@ class RabbitMQCommandServer
 
     private $bindingKey;
 
+    private $queueName;
+
     /**
      * @param SerializerInterface  $serializer
      * @param AMQPStreamConnection $connection
@@ -31,11 +32,12 @@ class RabbitMQCommandServer
         $this->serializer = $serializer;
         $this->connection = $connection;
         $this->bindingKey = $bindingKey;
-        $this->init();
     }
 
     public function listen(array $commandHandlers)
     {
+        $this->init();
+
         $callback = function($req) use ($commandHandlers) {
             $command = $this->serializer->deserialize(json_decode($req->body, true));
             foreach ($commandHandlers as $commandHandler) {
@@ -64,7 +66,7 @@ class RabbitMQCommandServer
 
         };
 
-        $this->channel->basic_consume(self::QUEUE_NAME, '', false, false, false, false, $callback);
+        $this->channel->basic_consume($this->queueName, '', false, false, false, false, $callback);
 
         while(count($this->channel->callbacks)) {
             $this->channel->wait();
@@ -100,8 +102,9 @@ class RabbitMQCommandServer
     {
         $this->channel = $this->connection->channel();
         $this->channel->exchange_declare(self::EXCHANGE_NAME, 'topic', false, false, false);
-        $this->channel->queue_declare(self::QUEUE_NAME, false, false, false, false);
-        $this->channel->queue_bind(self::QUEUE_NAME, self::EXCHANGE_NAME, $this->bindingKey);
+        echo "create server queue";
+        list($this->queueName, ,) = $this->channel->queue_declare("", false, false, true, false);
+        $this->channel->queue_bind($this->queueName, self::EXCHANGE_NAME, $this->bindingKey);
     }
 }
 
