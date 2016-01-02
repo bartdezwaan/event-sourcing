@@ -71,7 +71,6 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
         $this->channel = $this->connection->channel();
         $this->channel->exchange_declare(self::EXCHANGE_NAME, 'topic', false, false, false);
 
-        echo "create dispatcher queue";
         list($this->callback_queue, ,) = $this->channel->queue_declare(
             "", false, false, true, false
         );

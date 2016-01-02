@@ -102,7 +102,6 @@ class RabbitMQCommandServer
     {
         $this->channel = $this->connection->channel();
         $this->channel->exchange_declare(self::EXCHANGE_NAME, 'topic', false, false, false);
-        echo "create server queue";
         list($this->queueName, ,) = $this->channel->queue_declare("", false, false, true, false);
         $this->channel->queue_bind($this->queueName, self::EXCHANGE_NAME, $this->bindingKey);
     }
