@@ -24,7 +24,7 @@ services:
 
     zwaan.message_listener:
         class: Zwaan\EventSourcing\MessageHandling\RabbitMQMessageListener
-        arguments: [@zwaan.serializer, @broadway.simple.event_bus, @zwaan.rabbitmq_adapter.php_amqp_lib.factory]
+        arguments: [@zwaan.serializer, @zwaan.event_handling.event_bus, @zwaan.rabbitmq_adapter.php_amqp_lib.factory]
 
     zwaan.replay.event_requester:
         class: Zwaan\EventSourcing\Replay\EventRequester

@@ -2,9 +2,10 @@
 
 namespace Zwaan\EventSourcing\CommandHandling;
 
+use Broadway\CommandHandling\CommandBusInterface;
 use Broadway\CommandHandling\CommandHandlerInterface;
 
-class RabbitMQCommandBus
+class RabbitMQCommandBus implements CommandBusInterface
 {
     private $commandDispatcher;
     private $commandServer;
