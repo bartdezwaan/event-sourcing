@@ -16,7 +16,7 @@ class MessageBusSubscriberCompilerPass implements CompilerPassInterface
      */
     public function process(ContainerBuilder $container)
     {
-        $definition = $container->findDefinition('broadway.simple.event_bus');
+        $definition = $container->findDefinition('zwaan.message_listener');
 
         foreach ($container->findTaggedServiceIds('broadway.domain.event_listener') as $id => $attributes) {
             $definition->addMethodCall('subscribe', array(new Reference($id)));
