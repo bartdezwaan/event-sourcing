@@ -63,6 +63,8 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
             $this->channel->wait(null, false, 10);
         }
 
+        $this->channel->close();
+
         return $this->response;
     }
 
@@ -72,7 +74,7 @@ class RabbitMQCommandDispatcher implements CommandDispatcher
         $this->channel->exchange_declare(self::EXCHANGE_NAME, 'topic', false, false, false);
 
         list($this->callback_queue, ,) = $this->channel->queue_declare(
-            "", false, false, true, false
+            "", false, false, true, true
         );
 
         $this->channel->basic_consume(
