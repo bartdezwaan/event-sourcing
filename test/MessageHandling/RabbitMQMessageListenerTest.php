@@ -17,25 +17,75 @@ use Zwaan\EventSourcing\TestCase;
 class RabbitMQMessageListenerTest extends TestCase
 {
     private $messageListener;
-    private $eventBus;
     private $serializer;
     private $fanoutFactory;
 
     public function setUp()
     {
         $this->serializer      = new PhpSerializer();
-        $this->eventBus        = $this->getEventBusMock();
         $this->fanoutFactory   = $this->getFanoutFactoryMock();
-        $this->messageListener = new RabbitMQMessageListener($this->serializer, $this->eventBus, $this->fanoutFactory);
+        $this->messageListener = new RabbitMQMessageListener($this->serializer, $this->fanoutFactory);
     }
 
-    private function getEventBusMock()
+    /**
+     * @test
+     */
+    public function it_subscribes_an_event_listener()
     {
-        if (false == $this->eventBus) {
-            $this->eventBus = $this->getMock('Broadway\EventHandling\EventBusInterface');
-        }
+        $domainMessage = $this->createDomainMessage(array('foo' => 'bar'));
 
-        return $this->eventBus;
+        $eventListener = $this->createEventListenerMock();
+        $eventListener
+            ->expects($this->once())
+            ->method('handle')
+            ->with($domainMessage);
+
+        $this->messageListener->subscribe($eventListener);
+
+        $this->getFanoutFactoryMock()
+            ->expects($this->once())
+            ->method('create')
+            ->will($this->returnValue($this->getInMemoryAdapter([$domainMessage])));
+
+        $this->messageListener->listen('anExchangeName', 'aQueueName');
+    }
+
+    /**
+     * @test
+     */
+    public function it_publishes_events_to_subscribed_event_listeners()
+    {
+        $domainMessage1 = $this->createDomainMessage(array('foo' => 'bar'));
+        $domainMessage2 = $this->createDomainMessage(array('foo' => 'bar'));
+
+        $eventListener1 = $this->createEventListenerMock();
+        $eventListener1
+            ->expects($this->at(0))
+            ->method('handle')
+            ->with($domainMessage1);
+        $eventListener1
+            ->expects($this->at(1))
+            ->method('handle')
+            ->with($domainMessage2);
+
+        $eventListener2 = $this->createEventListenerMock();
+        $eventListener2
+            ->expects($this->at(0))
+            ->method('handle')
+            ->with($domainMessage1);
+        $eventListener2
+            ->expects($this->at(1))
+            ->method('handle')
+            ->with($domainMessage2);
+
+        $this->getFanoutFactoryMock()
+            ->expects($this->once())
+            ->method('create')
+            ->will($this->returnValue($this->getInMemoryAdapter([$domainMessage1, $domainMessage2])));
+
+        $this->messageListener->subscribe($eventListener1);
+        $this->messageListener->subscribe($eventListener2);
+        $this->messageListener->listen('anExchangeName', 'aQueueName');
     }
 
     private function getFanoutFactoryMock()
@@ -49,42 +99,31 @@ class RabbitMQMessageListenerTest extends TestCase
         return $this->fanoutFactory;
     }
 
-    /**
-     * @test
-     */
-    public function it_can_listen_for_an_event_and_publish_it_to_event_bus()
-    {
-        $this->getFanoutFactoryMock()
-            ->expects($this->once())
-            ->method('create')
-            ->will($this->returnValue($this->getInMemoryAdapterWithOnePublishedMessage()));
-
-        $this->getEventBusMock()
-            ->expects($this->once())
-            ->method('publish');
-
-        $this->messageListener->listen('anExchangeName', 'aQueueName');
-    }
-
     private function createDomainMessage($payload)
     {
         return DomainMessage::recordNow(1, 1, new Metadata(array()), new SimpleTestEvent($payload));
     }
 
-    private function getInMemoryAdapterWithOnePublishedMessage()
+    private function getInMemoryAdapter(array $messages)
     {
         $adapter = new InMemoryAdapter();
-        $adapter->publish(
-            json_encode(
-                $this->serializer->serialize(
-                    $this->createDomainMessage(
-                        array('foo' => 'bar')
+
+        foreach ($messages as $message) {
+            $adapter->publish(
+                json_encode(
+                    $this->serializer->serialize(
+                        $message
                     )
                 )
-            )
-        );
+            );
+        }
 
         return $adapter;
+    }
+
+    private function createEventListenerMock()
+    {
+        return $this->getMockBuilder('Broadway\EventHandling\EventListenerInterface')->getMock();
     }
 }
 

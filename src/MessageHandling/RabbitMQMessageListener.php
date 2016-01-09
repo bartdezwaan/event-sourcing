@@ -6,19 +6,20 @@ use Zwaan\EventSourcing\MessageHandling\RabbitMQ\PhpAmqpLibFanoutAdapterFactory;
 use Broadway\Domain\DomainMessage;
 use Broadway\Domain\DomainEventStream;
 use Broadway\EventHandling\EventBusInterface;
+use Broadway\EventHandling\EventListenerInterface;
 use Broadway\Serializer\SerializerInterface;
 
 class RabbitMQMessageListener
 {
     /**
+     * @var array
+     */
+    private $eventListeners = array();
+
+    /**
      * @var SerializerInterface
      */
     private $serializer;
-
-    /**
-     * @var EventBusInterface
-     */
-    private $eventBus;
 
     /**
      * @var PhpAmqpLibFanoutAdapterFactory
@@ -27,13 +28,11 @@ class RabbitMQMessageListener
 
     /**
      * @param SerializerInterface            $serializer
-     * @param EventBusInterface              $eventBus
      * @param PhpAmqpLibFanoutAdapterFactory $fanoutFactory
      */
-    public function __construct(SerializerInterface $serializer, EventBusInterface $eventBus, PhpAmqpLibFanoutAdapterFactory $fanoutFactory)
+    public function __construct(SerializerInterface $serializer, PhpAmqpLibFanoutAdapterFactory $fanoutFactory)
     {
         $this->serializer    = $serializer;
-        $this->eventBus      = $eventBus;
         $this->fanoutFactory = $fanoutFactory;
     }
 
@@ -45,25 +44,20 @@ class RabbitMQMessageListener
     {
         $adapter = $this->fanoutFactory->create($exchangeName, $queueName);
 
-        $eventBus = $this->eventBus;
-        $callback = function($msg) use ($eventBus){
-            $this->eventBus->publish($this->getDomainEventStream($msg->body));
+        $callback = function($msg) {
+            $domainMessage = $this->deserializeDomainMessage($msg->body);
+            $this->handle($domainMessage);
         };
 
         $adapter->listen($callback);
     }
 
     /**
-     * @param string $message
-     *
-     * @return DomainEventStream
+     * @param EventListenerInterface $eventListener
      */
-    private function getDomainEventStream($message)
+    public function subscribe(EventListenerInterface $eventListener)
     {
-        $domainEvent = $this->deserializeDomainMessage($message);
-        $domainEventStream = new DomainEventStream([$domainEvent]);
-
-        return $domainEventStream;
+        $this->eventListeners[] = $eventListener;
     }
 
     /**
@@ -74,6 +68,16 @@ class RabbitMQMessageListener
     private function deserializeDomainMessage($message)
     {
         return $this->serializer->deserialize(json_decode($message, true));
+    }
+
+    /**
+     * Handle domain message
+     */
+    public function handle(DomainMessage $domainMessage)
+    {
+        foreach ($this->eventListeners as $eventListener) {
+            $eventListener->handle($domainMessage);
+        }
     }
 }
 
