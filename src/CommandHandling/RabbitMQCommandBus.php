@@ -28,7 +28,7 @@ class RabbitMQCommandBus implements CommandBusInterface
 
     public function dispatch($command)
     {
-        $this->commandDispatcher->dispatch($command);
+        return $this->commandDispatcher->dispatch($command);
     }
 
     public function listen()
