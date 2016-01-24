@@ -3,6 +3,7 @@
 namespace Zwaan\EventSourcing\CommandHandling;
 
 use Broadway\Serializer\SerializerInterface;
+use Broadway\CommandHandling\Exception\CommandNotAnObjectException;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
