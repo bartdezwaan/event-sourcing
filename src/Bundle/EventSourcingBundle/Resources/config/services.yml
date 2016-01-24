@@ -1,6 +1,7 @@
 services:
     zwaan.event_handling.event_bus:
         class: Zwaan\EventSourcing\EventHandling\AsyncEventBus
+        lazy: true
         arguments: [@zwaan.event_handler]
 
     zwaan.event_handler:
